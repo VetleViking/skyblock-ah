@@ -1,0 +1,14 @@
+{
+  "name": "car-spotting-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:frontend": "npm run dev --prefix skyblock-ah-frontend",
+    "dev:backend": "concurrently \"npm run dev:docker\" \"npm run dev:node\"",
+    "dev:docker": "cd skyblock-ah-backend && docker-compose up -d",
+    "dev:node": "npm run dev --prefix skyblock-ah-backend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "dependencies": {
+    "concurrently": "^7.0.0"
+  }
+}

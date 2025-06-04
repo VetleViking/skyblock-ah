@@ -42,43 +42,64 @@ type AuctionsResponse = {
 };
 
 export default function Home() {
+  const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
+  const apiBase = `${BASE_URL}/api/v1/auctions`;
+
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(false);
   const [reachEnd, setReachEnd] = useState(false);
 
+  // useEffect(() => {
+  //   let cancelled = false;
+
+  //   const fetchAllPages = async () => {
+  //     setLoading(true);
+  //     let page = 0;
+  //     let totalPages = Infinity;
+
+  //     try {
+  //       while (!cancelled && page < totalPages) {
+  //         const res = await fetch(
+  //           `https://api.hypixel.net/v2/skyblock/auctions?page=${page}`
+  //         );
+  //         const data: AuctionsResponse = await res.json();
+
+  //         setAuctions(prev => [...prev, ...data.auctions]);
+
+  //         totalPages = data.totalPages;
+  //         page += 1;
+  //       }
+  //       if (!cancelled) setReachEnd(true);
+  //     } catch (err) {
+  //       if (!cancelled) console.error("Error fetching auctions:", err);
+  //     } finally {
+  //       if (!cancelled) setLoading(false);
+  //     }
+  //   };
+
+  //   fetchAllPages();
+
+  //   return () => {
+  //     cancelled = true;
+  //   };
+  // }, []);
+
   useEffect(() => {
-    let cancelled = false;
+    if (loading) return;
 
-    const fetchAllPages = async () => {
+    const testDb = async () => {
       setLoading(true);
-      let page = 0;
-      let totalPages = Infinity;
-
       try {
-        while (!cancelled && page < totalPages) {
-          const res = await fetch(
-            `https://api.hypixel.net/v2/skyblock/auctions?page=${page}`
-          );
-          const data: AuctionsResponse = await res.json();
-
-          setAuctions(prev => [...prev, ...data.auctions]);
-
-          totalPages = data.totalPages;
-          page += 1;
-        }
-        if (!cancelled) setReachEnd(true);
+        const res = await fetch(`${apiBase}/test`);
+        const data = await res.json();
+        console.log("Response:", data);
       } catch (err) {
-        if (!cancelled) console.error("Error fetching auctions:", err);
+        console.error("Error fetching auctions:", err);
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
-    };
-
-    fetchAllPages();
-
-    return () => {
-      cancelled = true;
-    };
+    }
+    testDb();
   }, []);
 
   return (
