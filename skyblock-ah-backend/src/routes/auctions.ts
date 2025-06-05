@@ -1,7 +1,9 @@
 import { NextFunction, Request, Response, Router } from 'express';
 import { redisClient } from '../redis-source';
+import { getAuctions, setupSearchIndex } from '../utils/auctions';
 
 const router = Router();
+
 
 router.get('/test', async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -13,45 +15,26 @@ router.get('/test', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.get('/getall', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/get_page', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const allSpots = await redisClient.hGetAll('spots');
+        const page = Number(req.query.page) || 0;
+        const query = String(req.query.query || '');
 
-        console.log('All spots:', allSpots);
+        console.log('Fetching auctions for page:', page);
 
-        const now = Date.now();
+        // await setupSearchIndex();
 
-        const zsetAuctions = await redisClient.zRangeWithScores('auctions_ending', now, now + 1000 * 60 * 60 * 24 * 14); // 14 days from now
-        console.log('ZSet Auctions:', zsetAuctions); 
+        const auctionsData = await getAuctions(false, page, query);
 
-        
+        res.status(200).json({
+            auctions: auctionsData.auctions
+        });
 
-        res.status(200).json({message: 'Hello, world!'});
     } catch (err) {
         next(err);
     }
 });
 
-// let page = 0;
-  //     let totalPages = Infinity;
 
-  //     try {
-  //       while (!cancelled && page < totalPages) {
-  //         const res = await fetch(
-  //           `https://api.hypixel.net/v2/skyblock/auctions?page=${page}`
-  //         );
-  //         const data: AuctionsResponse = await res.json();
-
-  //         setAuctions(prev => [...prev, ...data.auctions]);
-
-  //         totalPages = data.totalPages;
-  //         page += 1;
-  //       }
-  //       if (!cancelled) setReachEnd(true);
-  //     } catch (err) {
-  //       if (!cancelled) console.error("Error fetching auctions:", err);
-  //     } finally {
-  //       if (!cancelled) setLoading(false);
-  //     }
 
 export default router;

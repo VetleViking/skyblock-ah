@@ -3,9 +3,10 @@ volumes:
 
 services:
   csa-redis:
-    image: redis:alpine
-    container_name: akyblock-ah-redis
-    command: ["redis-server", "--requirepass", "password"]
+    image: redis/redis-stack-server:latest 
+    container_name: skyblock-ah-redis
+    environment:
+      - REDIS_ARGS=--requirepass password
     expose:
       - "6379"
     ports:

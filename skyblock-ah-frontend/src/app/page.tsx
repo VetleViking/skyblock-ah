@@ -45,81 +45,62 @@ export default function Home() {
   const BASE_URL = process.env.NEXT_PUBLIC_DATABASE_IP || "http://localhost:4000";
   const apiBase = `${BASE_URL}/api/v1/auctions`;
 
-  const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState(false);
-  const [reachEnd, setReachEnd] = useState(false);
+  const [query, setQuery] = useState("");
+  const [auctions, setAuctions] = useState<Auction[]>([]);
 
-  // useEffect(() => {
-  //   let cancelled = false;
-
-  //   const fetchAllPages = async () => {
-  //     setLoading(true);
-  //     let page = 0;
-  //     let totalPages = Infinity;
-
-  //     try {
-  //       while (!cancelled && page < totalPages) {
-  //         const res = await fetch(
-  //           `https://api.hypixel.net/v2/skyblock/auctions?page=${page}`
-  //         );
-  //         const data: AuctionsResponse = await res.json();
-
-  //         setAuctions(prev => [...prev, ...data.auctions]);
-
-  //         totalPages = data.totalPages;
-  //         page += 1;
-  //       }
-  //       if (!cancelled) setReachEnd(true);
-  //     } catch (err) {
-  //       if (!cancelled) console.error("Error fetching auctions:", err);
-  //     } finally {
-  //       if (!cancelled) setLoading(false);
-  //     }
-  //   };
-
-  //   fetchAllPages();
-
-  //   return () => {
-  //     cancelled = true;
-  //   };
-  // }, []);
-
-  useEffect(() => {
+  const testDb = async () => {
     if (loading) return;
 
-    const testDb = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`${apiBase}/test`);
-        const data = await res.json();
-        console.log("Response:", data);
-      } catch (err) {
-        console.error("Error fetching auctions:", err);
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/get_page${query ? `?query=${encodeURIComponent(query)}` : ""}`);
+      const data = await res.json();
+      console.log("Response:", data);
+      setAuctions(data.auctions || []);
+    } catch (err) {
+      console.error("Error fetching test endpoint:", err);
+    } finally {
+      setLoading(false);
     }
-    testDb();
-  }, []);
+  }
 
   return (
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Auctions</h1>
-
+      <div className="mb-4">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search auctions..."
+          className="border p-2 rounded w-full"
+          />
+        <button
+          onClick={testDb}
+          className="mt-2 bg-blue-500 text-white p-2 rounded"
+          >
+          Test DB Connection
+        </button>
+      </div>
       {loading && <p>Loading…</p>}
-      {reachEnd && !loading && (
-        <p>
-          Finished loading <strong>{auctions.length}</strong> auctions.
-        </p>
-      )}
-
-      <ul>
-        {auctions.map(a => (
-          <li key={a.uuid} className="mb-1">
-            {a.item_name} – { a.highest_bid_amount >= a.starting_bid ? a.highest_bid_amount.toLocaleString() : a.starting_bid.toLocaleString()} coins
-          </li>
-        ))}
-      </ul>
+      <div>
+        {auctions.length > 0 ? (
+          <ul className="space-y-4">
+            {auctions.map((auction) => (
+              <li key={auction.uuid} className="border p-4 rounded">
+                <h2 className="font-bold">{auction.item_name}</h2>
+                <p>Starting Bid: {auction.starting_bid}</p>
+                <p>Highest Bid: {auction.highest_bid_amount}</p>
+                <p>End Time: {new Date(auction.end * 1000).toLocaleString()}</p>
+                <p>Bin: {auction.bin ? "Yes" : "No"}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No auctions found.</p>
+        )}
+      </div>
     </div>
   );
 }
