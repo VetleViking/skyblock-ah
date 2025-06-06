@@ -52,11 +52,17 @@ export default function Home() {
     const [bin, setBin] = useState<boolean|null>(null);
     const [sortBy, setSortBy] = useState<"end" | "starting_bid" | "highest_bid_amount">("end");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+    const [stars, setStars] = useState<number>(0);
 
     const testDb = async () => {
         if (loading) return;
 
         setLoading(true);
+
+        const finishedQuery = stars > 0 ? `${query} ${
+            stars <= 5 ? "✪".repeat(stars) : "✪✪✪✪✪" + ["➊", "➋", "➌", "➍", "➎"][stars - 6]
+        }` : query;
+
         try {
             const res = await fetch(`${apiBase}/get_page`, {
                 method: "POST",
@@ -66,7 +72,7 @@ export default function Home() {
                 body: JSON.stringify({
                     page: 0,
                     options: {
-                        query: query,
+                        query: finishedQuery,
                         bin: bin,
                         sort_by: sortBy,
                         sort_order: sortOrder,
@@ -115,6 +121,23 @@ export default function Home() {
                     >
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
+                    </select>
+                    <select
+                        value={stars.toString()}
+                        onChange={(e) => setStars(Number(e.target.value))}
+                        className="border p-2 rounded ml-2"
+                    >
+                        <option value="0">Any amount of stars</option>
+                        <option value="1">1 Star</option>
+                        <option value="2">2 Stars</option>
+                        <option value="3">3 Stars</option>
+                        <option value="4">4 Stars</option>
+                        <option value="5">5 Stars</option>
+                        <option value="6">6 Stars</option>
+                        <option value="7">7 Stars</option>
+                        <option value="8">8 Stars</option>
+                        <option value="9">9 Stars</option>
+                        <option value="10">10 Stars</option>
                     </select>
                 </div>
                 <input
