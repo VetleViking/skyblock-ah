@@ -144,7 +144,7 @@ export async function readAuctionPage(page = 0, options: getAuctionsOptions): Pr
 
     const res = await redisClient.ft.search(
         "idx:auction",
-        `@item_name:${options.query.trim()}* ${options.bin !== null ? `@bin:{${options.bin ? "true" : "false"}}` : ""}`,
+        `@item_name:${escapeSearchQuery(options.query.trim())}* ${options.bin !== null ? `@bin:{${options.bin ? "true" : "false"}}` : ""}`,
         {
             LIMIT: {
                 from: startIdx,
