@@ -40,10 +40,23 @@ type AuctionsResponse = {
   totalPages: number;
 };
 
+type getAuctionsOptions = {
+    query: string;
+    bin: boolean | null;
+    sort_by: "end" | "starting_bid" | "highest_bid_amount";
+    sort_order: "asc" | "desc";
+};
+
+
 export async function getAuctions(
     fetchAll: boolean = false,
     page: number = 0,
-    query: string = ""
+    options: getAuctionsOptions = {
+        query: "",
+        bin: null,
+        sort_by: "end",
+        sort_order: "asc"
+    }
 ): Promise<{
     auctions: Auction[];
     lastUpdated: number;
@@ -94,7 +107,7 @@ export async function getAuctions(
     
     await redisClient.hSet("auction_data", "last_updated", newLastUpdated);
     
-    const auctions = await readAuctionPage(page, query);
+    const auctions = await readAuctionPage(page, options);
 
     return {
         auctions: auctions,
@@ -105,12 +118,12 @@ export async function getAuctions(
 const REDISEARCH_SPECIAL = /[\\@+\-=&|><{}()[\]^"~*?:/]/g;
 
 function escapeSearchQuery(raw: string): string {
-  return raw.replace(REDISEARCH_SPECIAL, ch => `\\${ch}`);
+  return raw.replace(REDISEARCH_SPECIAL, _ => ``);
 }
 
 const PAGE_SIZE = 1000;
 
-export async function readAuctionPage(page = 0, query = ""): Promise<Auction[]> {
+export async function readAuctionPage(page = 0, options: getAuctionsOptions): Promise<Auction[]> {
     const startIdx = page * PAGE_SIZE;
     const endIdx   = startIdx + PAGE_SIZE - 1;
 
@@ -126,25 +139,29 @@ export async function readAuctionPage(page = 0, query = ""): Promise<Auction[]> 
 
     let auctions: any[] = [];
 
-    if (query) {
-        console.log("Searching for query:", escapeSearchQuery(query));
+    console.log("Searching for query:", escapeSearchQuery(options.query));
+    console.log(options);
 
-        const res = await redisClient.ft.search(
-            "idx:auction",
-            `@item_name:"${escapeSearchQuery(query)}"`,
-            { LIMIT: { from: 0, size: 1000 } }
-        );
-        if (!res || !res.documents) {
-            return [];
+    const res = await redisClient.ft.search(
+        "idx:auction",
+        `@item_name:${options.query.trim()}* ${options.bin !== null ? `@bin:{${options.bin ? "true" : "false"}}` : ""}`,
+        {
+            LIMIT: {
+                from: startIdx,
+                size: PAGE_SIZE,
+            },
+            SORTBY: {
+                BY: `${options.sort_by}`,
+                DIRECTION: options.sort_order.toUpperCase() as "ASC" | "DESC",
+            },
         }
+    );
 
-        auctions = res.documents.map(doc => doc.value);
-    } else {
-        const pipe = redisClient.multi();
-        uuids.forEach(id => pipe.json.get(`auction:${id}`));
-        const rows = await pipe.exec() as any[]; // TODO: Fix type
-        auctions = rows;
+    if (!res || !res.documents) {
+        return [];
     }
+
+    auctions = res.documents.map(doc => doc.value);
 
     return auctions;
 }
@@ -164,10 +181,22 @@ export async function setupSearchIndex() {
             "$.starting_bid": {
                 type: SchemaFieldTypes.NUMERIC,
                 AS: "starting_bid",
+                SORTABLE: true,
             },
             "$.highest_bid_amount": {
                 type: SchemaFieldTypes.NUMERIC,
                 AS: "highest_bid_amount",
+                SORTABLE: true,
+            },
+            "$.start": {
+                type: SchemaFieldTypes.NUMERIC,
+                AS: "start",
+                SORTABLE: true, 
+            },
+            "$.end": {
+                type: SchemaFieldTypes.NUMERIC,
+                AS: "end",
+                SORTABLE: true,
             },
         },
         {

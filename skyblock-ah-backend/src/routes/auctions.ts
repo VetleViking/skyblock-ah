@@ -15,16 +15,15 @@ router.get('/test', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.get('/get_page', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/get_page', async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const page = Number(req.query.page) || 0;
-        const query = String(req.query.query || '');
+        const { page, options } = req.body;
 
         console.log('Fetching auctions for page:', page);
 
         // await setupSearchIndex();
 
-        const auctionsData = await getAuctions(false, page, query);
+        const auctionsData = await getAuctions(false, page, options);
 
         res.status(200).json({
             auctions: auctionsData.auctions
