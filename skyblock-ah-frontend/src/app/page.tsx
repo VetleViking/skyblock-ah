@@ -95,11 +95,11 @@ export default function Home() {
         <div className="p-4">
             <h1 className="text-xl font-bold mb-4">Auctions</h1>
             <div className="mb-4">
-                <div className="mb-2">
+                <div className="flex items-center mb-2 gap-2">
                     <select
                         value={bin?.toString() ?? ""}
                         onChange={(e) => setBin(e.target.value === "true" ? true : e.target.value === "false" ? false : null)}
-                        className="border p-2 rounded mr-2"
+                        className="border p-2 rounded"
                     >
                         <option value="">All Auctions</option>
                         <option value="true">BIN Auctions</option>
@@ -117,7 +117,7 @@ export default function Home() {
                     <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                        className="border p-2 rounded ml-2"
+                        className="border p-2 rounded"
                     >
                         <option value="asc">Ascending</option>
                         <option value="desc">Descending</option>
@@ -125,7 +125,7 @@ export default function Home() {
                     <select
                         value={stars.toString()}
                         onChange={(e) => setStars(Number(e.target.value))}
-                        className="border p-2 rounded ml-2"
+                        className="border p-2 rounded"
                     >
                         <option value="0">Any amount of stars</option>
                         <option value="1">1 Star</option>
