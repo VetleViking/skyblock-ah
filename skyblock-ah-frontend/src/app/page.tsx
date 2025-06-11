@@ -154,8 +154,7 @@ export default function Home() {
                     Fetch Auctions
                 </button>
             </div>
-            {loading && <p>Loading…</p>}
-            <div>
+            {loading ? <p>Loading…</p> : <div>
                 {auctions.length > 0 ? (
                     <ul className="space-y-4">
                         {auctions.map((auction) => (
@@ -172,6 +171,7 @@ export default function Home() {
                     <p>No auctions found.</p>
                 )}
             </div>
+            }
         </div>
     );
 }
