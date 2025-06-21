@@ -54,7 +54,7 @@ export default function Home() {
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
     const [stars, setStars] = useState<number>(0);
 
-    const testDb = async () => {
+    const searchAuctions = async () => {
         if (loading) return;
 
         setLoading(true);
@@ -148,7 +148,7 @@ export default function Home() {
                     className="border p-2 rounded w-full"
                 />
                 <button
-                    onClick={testDb}
+                    onClick={searchAuctions}
                     className="mt-2 bg-blue-500 text-white p-2 rounded"
                 >
                     Fetch Auctions
