@@ -59,9 +59,9 @@ export default function Home() {
 
         setLoading(true);
 
-        const finishedQuery = stars > 0 ? `${query} ${
-            stars <= 5 ? "✪".repeat(stars) : "✪✪✪✪✪" + ["➊", "➋", "➌", "➍", "➎"][stars - 6]
-        }` : query;
+        const starsString = stars <= 5 ? "✪".repeat(stars) : "✪✪✪✪✪" + ["➊", "➋", "➌", "➍", "➎"][stars - 6] || "";
+
+        const finishedQuery = query ? `${query} ${starsString}`.trim() : starsString;
 
         try {
             const res = await fetch(`${apiBase}/get_page`, {
