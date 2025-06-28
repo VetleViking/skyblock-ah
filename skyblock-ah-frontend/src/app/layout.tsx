@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: "Skyblock AH",
-    description: "A Skyblock Auction House frontend",
+    description: "A Skyblock Auction House page",
 };
 
 export default function RootLayout({

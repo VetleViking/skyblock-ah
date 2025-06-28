@@ -167,9 +167,7 @@ export default function Home() {
                             </li>
                         ))}
                     </ul>
-                ) : (
-                    <p>No auctions found.</p>
-                )}
+                ) : <p>No auctions found.</p>}
             </div>
             }
         </div>
