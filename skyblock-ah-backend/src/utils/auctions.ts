@@ -139,9 +139,6 @@ export async function readAuctionPage(page = 0, options: getAuctionsOptions): Pr
 
     let auctions: any[] = [];
 
-    console.log("Searching for query:", escapeSearchQuery(options.query));
-    console.log(options);
-
     const res = await redisClient.ft.search(
         "idx:auction",
         `@item_name:${escapeSearchQuery(options.query.trim())}* ${options.bin !== null ? `@bin:{${options.bin ? "true" : "false"}}` : ""}`,
